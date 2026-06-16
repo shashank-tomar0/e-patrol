@@ -232,6 +232,35 @@ function renderCanvases() {
             ctx.fillText('REC ● 25FPS', width - 85, 20);
         }
 
+        // Draw physical Tripwire boundary for Camera 1 (Subway Platform)
+        if (camId === 1) {
+            const tripwireY = height * 0.76;
+            const hasIntrusion = data.active_anomalies && data.active_anomalies.some(a => a.type === 'intrusion');
+            
+            // Set style
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = hasIntrusion ? '#ff3366' : '#ffcc00';
+            ctx.setLineDash([8, 6]);
+            
+            ctx.shadowBlur = hasIntrusion ? 12 : 3;
+            ctx.shadowColor = ctx.strokeStyle;
+            
+            // Draw horizontal tripwire line
+            ctx.beginPath();
+            ctx.moveTo(0, tripwireY);
+            ctx.lineTo(width, tripwireY);
+            ctx.stroke();
+            
+            // Reset dash and shadow
+            ctx.setLineDash([]);
+            ctx.shadowBlur = 0;
+            
+            // Text Label
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.font = 'bold 9px Orbitron';
+            ctx.fillText(hasIntrusion ? '🚨 CRITICAL: TRIPWIRE BREACHED' : '⚠️ TRACK INTRUSION TRIPWIRE LIMIT', 15, tripwireY - 8);
+        }
+
         // Draw Optical Flow vectors (small velocity arrows)
         if (data.flow_vectors && data.flow_vectors.length > 0) {
             ctx.lineWidth = 1.5;

@@ -8,6 +8,7 @@ SEMANTIC_SYNONYMS = {
     "fight": ["altercation", "combat", "clash", "violence", "punch", "assault", "hit", "striking", "fighting"],
     "fall": ["collapse", "trip", "slip", "down", "lying", "unconscious", "medical", "faint", "fainted", "collapsed"],
     "panic": ["run", "running", "stampede", "dispersal", "fleeing", "scared", "evacuation", "rush", "crowd"],
+    "intrusion": ["trespassing", "boundary", "crossing", "tracks", "trespass", "yellow line", "restricted", "line"],
     "subway": ["platform", "tracks", "train", "station", "rail"],
     "escalator": ["stairs", "steps", "elevator"],
     "lobby": ["hall", "ticketing", "concourse", "entrance"]

@@ -315,6 +315,16 @@ class VideoPipeline:
             skeletons.append(self._create_procedural_skeleton(id=4, cx=s1_x, cy=0.55, posture="run", seed=4))
             skeletons.append(self._create_procedural_skeleton(id=5, cx=s2_x, cy=0.5, posture="run", seed=5))
 
+        elif self.simulated_state == "intrusion":
+            # Skeleton walking slowly towards the track line, crossing it
+            elapsed = self.simulation_ticks % 100
+            
+            # Walks down from cy=0.36 to cy=0.52 (feet reach cy+0.3 = 0.82)
+            cy = 0.36 + min(16, elapsed * 0.2) * 0.01
+            posture = "walk" if elapsed < 80 else "stand"
+            
+            skeletons.append(self._create_procedural_skeleton(id=6, cx=0.5, cy=cy, posture=posture, seed=6))
+
         self.latest_skeletons = skeletons
         self.latest_flow_vectors = flow_vectors
         self.latest_crowd_density = crowd_density

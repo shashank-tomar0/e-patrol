@@ -21,9 +21,11 @@ class AnalyticsEngine:
         self.cooldowns = {
             "fall": 0.0,
             "fight": 0.0,
-            "panic": 0.0
+            "panic": 0.0,
+            "intrusion": 0.0
         }
         self.COOLDOWN_PERIOD = 5.0 # seconds
+        self.INTRUSION_Y_THRESHOLD = 0.76 # Safety yellow line horizontal limit
 
     def update(self, telemetry):
         """Adds new telemetry frame to history and runs spatio-temporal anomaly detection."""
@@ -70,6 +72,18 @@ class AnalyticsEngine:
                 "message": "Crowd Anomaly Detected: Rapid crowd dispersal or stampede velocity",
                 "timestamp": current_time,
                 "confidence": 0.85
+            })
+
+        # Check track trespassing / intrusion
+        intrusion_detected = self._detect_intrusion()
+        if intrusion_detected and (current_time - self.cooldowns["intrusion"] > self.COOLDOWN_PERIOD):
+            self.cooldowns["intrusion"] = current_time
+            anomalies.append({
+                "type": "intrusion",
+                "severity": "critical",
+                "message": "Critical Intrusion: Individual crossed safety yellow line towards tracks",
+                "timestamp": current_time,
+                "confidence": 0.95
             })
 
         return anomalies
@@ -234,4 +248,26 @@ class AnalyticsEngine:
                 # Highly scattered angles + high velocity indicates dispersal/panic
                 if angle_std > 1.2:
                     return True
+        return False
+
+    def _detect_intrusion(self):
+        """Detects if any skeleton crosses the safety boundary line on Platform 2 (Camera 1)."""
+        latest_frame = self.history[-1]
+        
+        # Only check on Camera 1 (Subway Platform)
+        if latest_frame.get("camera_id") != 1:
+            return False
+            
+        skeletons = latest_frame.get("skeletons", [])
+        for sk in skeletons:
+            landmarks = sk["landmarks"]
+            # Check ankles (MediaPipe joint IDs: 27, 28)
+            ankle_l = next((lm for lm in landmarks if lm["id"] == 27), None)
+            ankle_r = next((lm for lm in landmarks if lm["id"] == 28), None)
+            
+            # Anomaly triggered if feet coordinates cross below (greater than Y) the threshold
+            if ankle_l and ankle_l["y"] > self.INTRUSION_Y_THRESHOLD:
+                return True
+            if ankle_r and ankle_r["y"] > self.INTRUSION_Y_THRESHOLD:
+                return True
         return False

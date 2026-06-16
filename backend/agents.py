@@ -14,12 +14,14 @@ class SceneVerifierAgent:
                 "fall": {"severity": "critical", "action": "Trigger Platform Emergency Stop & dispatcher alert"},
                 "fight": {"severity": "critical", "action": "Dispatch station police & activate CCTV focus"},
                 "panic": {"severity": "critical", "action": "Open emergency exit gates & initiate audio guidance"},
+                "intrusion": {"severity": "critical", "action": "Trigger Track intrusion voice warning & warn dispatcher"},
                 "loitering": {"severity": "low", "action": "Monitor skeleton coordinate bounds"}
             },
             "subway_tracks": {
                 "fall": {"severity": "critical", "action": "IMMEDIATE POWER SHUTDOWN of rail lines & dispatcher override"},
                 "fight": {"severity": "critical", "action": "IMMEDIATE POWER SHUTDOWN & Police Dispatch"},
                 "panic": {"severity": "critical", "action": "Alert platform staff & track cameras"},
+                "intrusion": {"severity": "critical", "action": "IMMEDIATE POWER SHUTDOWN of rail lines & dispatcher override"},
                 "loitering": {"severity": "high", "action": "Sound trackside intrusion alarm & broadcast voice warning"}
             },
             "escalator": {
@@ -157,6 +159,15 @@ class IncidentSummarizerAgent:
             visual_analysis = (
                 f"Optical flow dense vector fields show a radial dispersal pattern outward from the scene center. "
                 f"Skeletons exhibit locomotion kinematics corresponding to running (large stride animations)."
+            )
+        elif event_type == "intrusion":
+            summary = (
+                f"Safety line intrusion verified at {location}. A tracked skeleton "
+                f"crossed the yellow platform safety threshold, entering the trackside zone."
+            )
+            visual_analysis = (
+                f"Skeletal tracking shows ankle coordinates extending past y-coordinate 0.76. "
+                f"Immediate power shutdown override issued to hold incoming trains."
             )
         else:
             summary = f"Routine alert: anomaly detected at {location}."
