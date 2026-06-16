@@ -62,6 +62,23 @@ function playAlertSound(severity = 'critical') {
     }
 }
 
+// Voice Alert Dispatcher (TTS)
+function speakAlert(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Cancel any ongoing speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.92; // Clear, deliberate speed
+        utterance.pitch = 0.85; // Deeper, authoritative tone
+        
+        // Find an English voice if possible
+        const voices = window.speechSynthesis.getVoices();
+        const voice = voices.find(v => v.lang.startsWith('en-'));
+        if (voice) utterance.voice = voice;
+
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
 // Websocket streams connection
 let wsStream1, wsStream2, wsAlerts;
 
@@ -466,6 +483,10 @@ function injectAlertItem(record) {
     const headerIndicator = document.getElementById('alert-indicator');
     headerIndicator.innerText = 'THREAT IN SCENE';
     headerIndicator.className = 'tag tag-danger animate-pulse';
+
+    // Broadcast audio speech warning
+    const alertSpeechText = `Alert. ${record.type} detected at ${record.location}. Response protocol. ${record.threat_level} threat level.`;
+    speakAlert(alertSpeechText);
 }
 
 // Incident Dossier Modal
