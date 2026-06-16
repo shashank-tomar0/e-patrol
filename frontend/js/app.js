@@ -14,7 +14,8 @@ const state = {
     },
     playbackEvent: null, // Holds event details if playing back history
     playbackFrame: 0,
-    wsConnected: false
+    wsConnected: false,
+    tripwireThreshold: 0.76 // Dynamic height limit for track trespassing
 };
 
 // Joint Connections for Drawing Skeletons (MediaPipe indexes)
@@ -234,7 +235,7 @@ function renderCanvases() {
 
         // Draw physical Tripwire boundary for Camera 1 (Subway Platform)
         if (camId === 1) {
-            const tripwireY = height * 0.76;
+            const tripwireY = height * state.tripwireThreshold;
             const hasIntrusion = data.active_anomalies && data.active_anomalies.some(a => a.type === 'intrusion');
             
             // Set style
@@ -626,6 +627,25 @@ async function saveWebhookSettings() {
             btn.disabled = false;
             input.disabled = false;
         }, 2000);
+    }
+}
+
+function updateTripwireVal(val) {
+    document.getElementById('tripwire-val').innerText = `${val}%`;
+    state.tripwireThreshold = parseFloat(val) / 100.0;
+}
+
+async function sendTripwireThreshold(val) {
+    try {
+        const response = await fetch(`${BASE_URL}/api/settings/tripwire`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ threshold: parseInt(val) })
+        });
+        const result = await response.json();
+        console.log('Tripwire updated on backend:', result);
+    } catch (e) {
+        console.error('Failed to update tripwire threshold:', e);
     }
 }
 

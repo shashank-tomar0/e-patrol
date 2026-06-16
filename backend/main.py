@@ -280,6 +280,15 @@ def update_settings(payload: dict):
     logger.info(f"Global dispatch webhook settings updated: {dispatch_webhook_url}")
     return {"status": "success", "webhook_url": dispatch_webhook_url}
 
+@app.post("/api/settings/tripwire")
+def set_tripwire(payload: dict):
+    """Dynamically updates the Y-threshold parameter in the spatiotemporal analytics engine."""
+    threshold = float(payload.get("threshold", 76)) / 100.0
+    if 1 in analytics_engines:
+        analytics_engines[1].INTRUSION_Y_THRESHOLD = threshold
+        logger.info(f"Subway platform tripwire safety threshold recalibrated: {threshold:.2f}")
+    return {"status": "success", "threshold": threshold}
+
 # Serve Frontend
 @app.get("/")
 def redirect_to_dashboard():

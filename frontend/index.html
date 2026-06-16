@@ -74,6 +74,11 @@
                                 <input type="text" id="stream-src-1" placeholder="Source (Webcam: '0', RTSP, MP4)...">
                                 <button class="btn btn-connect-feed" onclick="connectRealFeed(1)">CONNECT</button>
                             </div>
+                            <div class="tripwire-control" style="margin-top: 2px; margin-bottom: 2px; display: flex; align-items: center; gap: 8px; width: 100%;">
+                                <span class="trigger-label">TUNE TRIPWIRE:</span>
+                                <input type="range" id="tripwire-slider" min="50" max="95" value="76" style="flex: 1; accent-color: var(--accent-cyan); height: 4px; cursor: pointer;" oninput="updateTripwireVal(this.value)" onchange="sendTripwireThreshold(this.value)">
+                                <span id="tripwire-val" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan); min-width: 28px; text-align: right;">76%</span>
+                            </div>
                             <div class="simulation-triggers">
                                 <span class="trigger-label">SIMULATE ANOMALY:</span>
                                 <button class="btn btn-sim normal active" onclick="triggerSim(1, 'normal')">Normal</button>
