@@ -262,6 +262,45 @@ function renderCanvases() {
             ctx.fillText(hasIntrusion ? '🚨 CRITICAL: TRIPWIRE BREACHED' : '⚠️ TRACK INTRUSION TRIPWIRE LIMIT', 15, tripwireY - 8);
         }
 
+        // Draw restricted zone corridor boundary for Camera 2 (North Escalator Lobby)
+        if (camId === 2) {
+            const hasLoitering = data.active_anomalies && data.active_anomalies.some(a => a.type === 'loitering');
+            
+            // Restricted corridor coordinates (relative values): x in [0.08, 0.35], y in [0.35, 0.75]
+            const minX = width * 0.08;
+            const maxX = width * 0.35;
+            const minY = height * 0.35;
+            const maxY = height * 0.75;
+            
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = hasLoitering ? 'rgba(255, 153, 51, 0.8)' : 'rgba(255, 153, 51, 0.35)';
+            ctx.setLineDash([6, 4]);
+            
+            // Flashing border if loitering active
+            if (hasLoitering) {
+                const pulse = Math.sin(Date.now() / 150.0) > 0;
+                ctx.strokeStyle = pulse ? 'rgba(255, 153, 51, 0.9)' : 'rgba(255, 51, 102, 0.9)';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = ctx.strokeStyle;
+            }
+            
+            // Draw rectangle bounding box
+            ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+            
+            // Fill zone slightly
+            ctx.fillStyle = hasLoitering ? 'rgba(255, 153, 51, 0.06)' : 'rgba(255, 153, 51, 0.02)';
+            ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
+            
+            // Reset dash and shadow
+            ctx.setLineDash([]);
+            ctx.shadowBlur = 0;
+            
+            // Text Label
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.font = 'bold 9px Orbitron';
+            ctx.fillText(hasLoitering ? '🚨 LOITERING WARNING: ZONE SECURE' : '⚠️ RESTRICTED ACCESS CORRIDOR', minX + 5, minY - 8);
+        }
+
         // Draw Optical Flow vectors (small velocity arrows)
         if (data.flow_vectors && data.flow_vectors.length > 0) {
             ctx.lineWidth = 1.5;

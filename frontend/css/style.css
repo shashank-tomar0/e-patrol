@@ -432,6 +432,13 @@ canvas {
     box-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
 }
 
+.btn-sim.loitering.active {
+    background: var(--accent-orange);
+    color: #fff;
+    border-color: var(--accent-orange);
+    box-shadow: 0 0 10px rgba(255, 153, 51, 0.4);
+}
+
 .stream-source-input {
     display: flex;
     gap: 4px;

@@ -22,10 +22,15 @@ class AnalyticsEngine:
             "fall": 0.0,
             "fight": 0.0,
             "panic": 0.0,
-            "intrusion": 0.0
+            "intrusion": 0.0,
+            "loitering": 0.0
         }
         self.COOLDOWN_PERIOD = 5.0 # seconds
         self.INTRUSION_Y_THRESHOLD = 0.76 # Safety yellow line horizontal limit
+        
+        # Loitering settings
+        self.LOITERING_TIME_LIMIT = 5.0 # seconds
+        self.skeleton_timers = {} # sk_id -> start_time
 
     def update(self, telemetry):
         """Adds new telemetry frame to history and runs spatio-temporal anomaly detection."""
@@ -84,6 +89,18 @@ class AnalyticsEngine:
                 "message": "Critical Intrusion: Individual crossed safety yellow line towards tracks",
                 "timestamp": current_time,
                 "confidence": 0.95
+            })
+
+        # Check loitering
+        loiter_detected = self._detect_loitering(telemetry)
+        if loiter_detected and (current_time - self.cooldowns["loitering"] > self.COOLDOWN_PERIOD):
+            self.cooldowns["loitering"] = current_time
+            anomalies.append({
+                "type": "loitering",
+                "severity": "medium",
+                "message": "Security Warning: Individual loitering inside restricted access corridor",
+                "timestamp": current_time,
+                "confidence": 0.85
             })
 
         return anomalies
@@ -271,3 +288,49 @@ class AnalyticsEngine:
             if ankle_r and ankle_r["y"] > self.INTRUSION_Y_THRESHOLD:
                 return True
         return False
+
+    def _detect_loitering(self, telemetry):
+        """Detects if any individual stays in a designated restricted corridor box for longer than LOITERING_TIME_LIMIT."""
+        skeletons = telemetry.get("skeletons", [])
+        current_time = telemetry.get("timestamp", time.time())
+        
+        # Bounding box for restricted corridor zone: [0.08, 0.35] to [0.35, 0.75] (relative coordinates)
+        zone_min_x, zone_max_x = 0.08, 0.35
+        zone_min_y, zone_max_y = 0.35, 0.75
+        
+        active_ids = set()
+        loitering_flag = False
+        
+        for sk in skeletons:
+            sk_id = sk["id"]
+            landmarks = sk["landmarks"]
+            
+            # Find center of mass using hips (23, 24)
+            hip_l = next((lm for lm in landmarks if lm["id"] == 23), None)
+            hip_r = next((lm for lm in landmarks if lm["id"] == 24), None)
+            
+            if hip_l and hip_r:
+                cx = (hip_l["x"] + hip_r["x"]) / 2.0
+                cy = (hip_l["y"] + hip_r["y"]) / 2.0
+                
+                # Check if center is inside the zone boundaries
+                if zone_min_x <= cx <= zone_max_x and zone_min_y <= cy <= zone_max_y:
+                    active_ids.add(sk_id)
+                    
+                    if sk_id not in self.skeleton_timers:
+                        self.skeleton_timers[sk_id] = current_time
+                    else:
+                        elapsed = current_time - self.skeleton_timers[sk_id]
+                        if elapsed > self.LOITERING_TIME_LIMIT:
+                            loitering_flag = True
+                else:
+                    # Exited the zone
+                    self.skeleton_timers.pop(sk_id, None)
+                    
+        # Clean up stale IDs (skeletons that disappeared from telemetry entirely)
+        for stored_id in list(self.skeleton_timers.keys()):
+            if stored_id not in active_ids:
+                self.skeleton_timers.pop(stored_id, None)
+                
+        return loitering_flag
+

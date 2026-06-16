@@ -325,6 +325,21 @@ class VideoPipeline:
             
             skeletons.append(self._create_procedural_skeleton(id=6, cx=0.5, cy=cy, posture=posture, seed=6))
 
+        elif self.simulated_state == "loitering":
+            # Walk left into the restricted corridor zone (x: 0.18, y: 0.55) and stand still
+            elapsed = self.simulation_ticks % 120
+            
+            if elapsed < 30:
+                cx = 0.5 - (elapsed / 30.0) * 0.32
+                cy = 0.5 + (elapsed / 30.0) * 0.05
+                posture = "walk"
+            else:
+                cx = 0.18
+                cy = 0.55
+                posture = "stand"
+                
+            skeletons.append(self._create_procedural_skeleton(id=7, cx=cx, cy=cy, posture=posture, seed=7))
+
         self.latest_skeletons = skeletons
         self.latest_flow_vectors = flow_vectors
         self.latest_crowd_density = crowd_density
