@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-PATROL // Dynamic Security & Anomaly Center</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="stars-overlay"></div>
+    <div class="scanlines"></div>
+
+    <div class="control-center">
+        <!-- HEADER -->
+        <header class="main-header">
+            <div class="logo-area">
+                <div class="pulse-indicator status-nominal"></div>
+                <h1>E-PATROL <span class="accent-text">AI</span></h1>
+                <span class="system-tag">// MULTI-MODAL ANOMALY REASONING ENGINE</span>
+            </div>
+            <div class="sys-metrics">
+                <div class="metric-group">
+                    <span class="m-label">SYS STATUS</span>
+                    <span class="m-value status-nominal">NOMINAL</span>
+                </div>
+                <div class="metric-group">
+                    <span class="m-label">ACTIVE NODES</span>
+                    <span class="m-value">02 / 02</span>
+                </div>
+                <div class="metric-group">
+                    <span class="m-label">NETWORK LATENCY</span>
+                    <span class="m-value" id="ping-latency">14ms</span>
+                </div>
+                <div class="time-display" id="system-time">2026-06-16 21:30:00 UTC</div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY -->
+        <div class="dashboard-grid">
+            
+            <!-- LEFT PANEL: CAMERA STREAMS -->
+            <section class="panel camera-panel">
+                <div class="panel-header">
+                    <h2><span class="icon">⌖</span> LIVE MULTI-STREAM FEED</h2>
+                    <span class="tag">FPS: ~15</span>
+                </div>
+                <div class="cameras-grid">
+                    <!-- CAMERA 1 -->
+                    <div class="camera-card" id="cam-card-1">
+                        <div class="camera-meta">
+                            <span class="cam-id">CAM 01 // SUBWAY PLATFORM 2</span>
+                            <span class="cam-status mode-privacy">PRIVACY MODE</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-cam-1"></canvas>
+                            <div class="hud-overlay" id="hud-cam-1">
+                                <div class="hud-corner top-left"></div>
+                                <div class="hud-corner top-right"></div>
+                                <div class="hud-corner bottom-left"></div>
+                                <div class="hud-corner bottom-right"></div>
+                            </div>
+                        </div>
+                        <div class="camera-controls">
+                            <button class="btn btn-toggle-privacy active" onclick="togglePrivacy(1)">Anonymized (Skeletons Only)</button>
+                            <div class="stream-source-input">
+                                <input type="text" id="stream-src-1" placeholder="Source (Webcam: '0', RTSP, MP4)...">
+                                <button class="btn btn-connect-feed" onclick="connectRealFeed(1)">CONNECT</button>
+                            </div>
+                            <div class="simulation-triggers">
+                                <span class="trigger-label">SIMULATE ANOMALY:</span>
+                                <button class="btn btn-sim normal active" onclick="triggerSim(1, 'normal')">Normal</button>
+                                <button class="btn btn-sim fight" onclick="triggerSim(1, 'fight')">Fight</button>
+                                <button class="btn btn-sim panic" onclick="triggerSim(1, 'panic')">Panic</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CAMERA 2 -->
+                    <div class="camera-card" id="cam-card-2">
+                        <div class="camera-meta">
+                            <span class="cam-id">CAM 02 // NORTH ESCALATOR</span>
+                            <span class="cam-status mode-privacy">PRIVACY MODE</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="canvas-cam-2"></canvas>
+                            <div class="hud-overlay" id="hud-cam-2">
+                                <div class="hud-corner top-left"></div>
+                                <div class="hud-corner top-right"></div>
+                                <div class="hud-corner bottom-left"></div>
+                                <div class="hud-corner bottom-right"></div>
+                            </div>
+                        </div>
+                        <div class="camera-controls">
+                            <button class="btn btn-toggle-privacy active" onclick="togglePrivacy(2)">Anonymized (Skeletons Only)</button>
+                            <div class="stream-source-input">
+                                <input type="text" id="stream-src-2" placeholder="Source (Webcam: '0', RTSP, MP4)...">
+                                <button class="btn btn-connect-feed" onclick="connectRealFeed(2)">CONNECT</button>
+                            </div>
+                            <div class="simulation-triggers">
+                                <span class="trigger-label">SIMULATE ANOMALY:</span>
+                                <button class="btn btn-sim normal active" onclick="triggerSim(2, 'normal')">Normal</button>
+                                <button class="btn btn-sim fall" onclick="triggerSim(2, 'fall')">Fall</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: TELEMETRY & ALERTS -->
+            <section class="panel right-panel">
+                <!-- TELEMETRY METRICS -->
+                <div class="panel-section telemetry-hud">
+                    <div class="panel-header">
+                        <h2><span class="icon">📊</span> KINEMATIC TELEMETRY HUD</h2>
+                    </div>
+                    <div class="metrics-row">
+                        <div class="gauge-card">
+                            <span class="g-label">CROWD DENSITY</span>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar fill-cyan" id="crowd-density-bar" style="width: 15%"></div>
+                            </div>
+                            <span class="g-value" id="crowd-density-val">15.0%</span>
+                        </div>
+                        <div class="gauge-card">
+                            <span class="g-label">FLOW VELOCITY</span>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar fill-orange" id="crowd-speed-bar" style="width: 12%"></div>
+                            </div>
+                            <span class="g-value" id="crowd-speed-val">1.2 m/s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALERTS SYSTEM -->
+                <div class="panel-section alerts-hud">
+                    <div class="panel-header alert-header">
+                        <h2><span class="icon">⚠</span> THREAT INTELLIGENCE LOG</h2>
+                        <span class="tag tag-danger animate-pulse" id="alert-indicator">MONITORING</span>
+                    </div>
+                    <div class="alerts-log" id="alerts-log-container">
+                        <!-- Alerts dynamically inject here -->
+                        <div class="empty-log-msg">No active security threats detected. System is running nominal.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BOTTOM PANEL: SEMANTIC SEARCH & INCIDENT DATABASE -->
+        <footer class="bottom-panel-section">
+            <div class="panel-header">
+                <h2><span class="icon">🔍</span> NEURAL EVENT VECTOR SEARCH</h2>
+                <span class="info-tag">Indexed Events Database</span>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Type semantic query (e.g. 'Show me when someone fell near the escalator' or 'fight platform')...">
+                <button class="btn btn-search" id="btn-search-trigger">RUN DENSE MATCH</button>
+            </div>
+
+            <div class="search-results-wrapper">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>RELEVANCE</th>
+                            <th>TIMESTAMP</th>
+                            <th>LOCATION</th>
+                            <th>ALERT TYPE</th>
+                            <th>AI INCIDENT SUMMARY</th>
+                            <th>VERIFIER ACTIONS</th>
+                            <th>PLAYBACK</th>
+                        </tr>
+                    </thead>
+                    <tbody id="search-results-body">
+                        <!-- Results dynamically inject here -->
+                    </tbody>
+                </table>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL DOSSIER VIEWER -->
+    <div class="modal-backdrop" id="dossier-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>INCIDENT DOSSIER <span class="event-id" id="modal-event-id">#87D2A</span></h3>
+                <button class="btn-close-modal" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="dossier-grid">
+                    <div class="dossier-left">
+                        <div class="dossier-field">
+                            <span class="d-label">DETECTED CRIME / ALERT</span>
+                            <span class="d-value alert-highlight" id="modal-alert-type">PHYSICAL ALTERCATION</span>
+                        </div>
+                        <div class="dossier-field">
+                            <span class="d-label">LOCATION</span>
+                            <span class="d-value" id="modal-location">Subway Platform 2</span>
+                        </div>
+                        <div class="dossier-field">
+                            <span class="d-label">TIMESTAMP</span>
+                            <span class="d-value" id="modal-time">2026-06-16 21:14:02 UTC</span>
+                        </div>
+                        <div class="dossier-field">
+                            <span class="d-label">THREAT LEVEL</span>
+                            <span class="d-value level-badge" id="modal-threat-level">CRITICAL</span>
+                        </div>
+                    </div>
+                    <div class="dossier-right">
+                        <div class="dossier-field">
+                            <span class="d-label">COGNITIVE AGENT SUMMARY</span>
+                            <p class="d-text" id="modal-summary">High-velocity skeleton conflict detected. Two subjects in close physical contact near safety warning line.</p>
+                        </div>
+                        <div class="dossier-field">
+                            <span class="d-label">VISUAL EVIDENCE ANALYSIS</span>
+                            <p class="d-text" id="modal-visual-analysis">Spatiotemporal tracking shows two skeletons colliding within proximity bounds. Wrists velocities clocked at 3.2m/s.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dossier-actions">
+                    <span class="d-label">EMERGENCY PROTOCOLS TRIGGERED</span>
+                    <p class="d-action-text" id="modal-actions">Dispatch platform police & alert dispatcher to hold trains.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
