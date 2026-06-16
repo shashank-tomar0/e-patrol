@@ -146,6 +146,17 @@
                         <div class="empty-log-msg">No active security threats detected. System is running nominal.</div>
                     </div>
                 </div>
+
+                <!-- LAYOUT MAP SYSTEM -->
+                <div class="panel-section layout-map-hud" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; flex: 0 0 auto;">
+                    <div class="panel-header">
+                        <h2><span class="icon">🗺</span> GEOSPATIAL PATROL MAP</h2>
+                        <span class="tag">ACTIVE TRACKS</span>
+                    </div>
+                    <div class="map-container" style="position: relative; width: 100%; height: 160px; background: #03060a; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden;">
+                        <canvas id="layout-map-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+                    </div>
+                </div>
             </section>
         </div>
 

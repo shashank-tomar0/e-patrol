@@ -322,6 +322,9 @@ function renderCanvases() {
         renderPlaybackCanvas();
     }
 
+    // Render geospatial Command Map
+    renderLayoutMap();
+
     requestAnimationFrame(renderCanvases);
 }
 
@@ -348,6 +351,128 @@ function renderPlaybackCanvas() {
     ctx.font = 'bold 11px Orbitron';
     ctx.fillText('HISTORICAL ARCHIVE REPLAY (ANONYMISED)', 15, height * 0.07);
     ctx.fillText('LOOPING', width - 85, height * 0.07);
+}
+
+// Geospatial Patrol Map Blueprint Renderer
+function renderLayoutMap() {
+    const canvas = document.getElementById('layout-map-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    
+    // Clear
+    ctx.fillStyle = '#03070d';
+    ctx.fillRect(0, 0, w, h);
+    
+    // Draw radar sweeps/grid lines
+    ctx.strokeStyle = 'rgba(0, 255, 204, 0.02)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x += 25) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (let y = 0; y < h; y += 25) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    
+    // Draw floor plan contours
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1.5;
+    
+    // Outer perimeter
+    ctx.strokeRect(w * 0.08, h * 0.08, w * 0.84, h * 0.84);
+    
+    // Room dividers
+    ctx.beginPath();
+    ctx.moveTo(w * 0.5, h * 0.08);
+    ctx.lineTo(w * 0.5, h * 0.92);
+    ctx.stroke();
+    
+    // Gate door markings
+    ctx.clearRect(w * 0.45, h * 0.08 - 2, w * 0.1, 4);
+    ctx.clearRect(w * 0.45, h * 0.92 - 2, w * 0.1, 4);
+    
+    // Label zones
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+    ctx.font = '7.5px Orbitron';
+    ctx.fillText('EAST ZONE // SUBWAY PLATFORM 2', w * 0.12, h * 0.18);
+    ctx.fillText('WEST ZONE // NORTH ESCALATOR LOBBY', w * 0.53, h * 0.18);
+    
+    // Map Coordinates
+    const c1_x = w * 0.28;
+    const c1_y = h * 0.58;
+    const c2_x = w * 0.72;
+    const c2_y = h * 0.58;
+    
+    const data1 = state.telemetry[1];
+    const data2 = state.telemetry[2];
+    
+    const t = Date.now() / 1000;
+    const pulseRadius = 5 + 4 * Math.sin(t * 8.0);
+    
+    // Render Camera 1 Heatmap & Node
+    if (data1) {
+        const rad = Math.max(12, (data1.density / 100.0) * 70);
+        const grad = ctx.createRadialGradient(c1_x, c1_y, 2, c1_x, c1_y, rad);
+        const color = data1.active_anomalies.length > 0 ? '255, 51, 102' : '0, 255, 204';
+        grad.addColorStop(0, `rgba(${color}, 0.25)`);
+        grad.addColorStop(1, `rgba(${color}, 0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(c1_x, c1_y, rad, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        const isAnomaly = data1.active_anomalies.length > 0;
+        ctx.fillStyle = isAnomaly ? '#ff3366' : '#00ffcc';
+        ctx.shadowBlur = isAnomaly ? 8 : 0;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.beginPath();
+        ctx.arc(c1_x, c1_y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.strokeStyle = ctx.fillStyle;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(c1_x, c1_y, pulseRadius, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        ctx.fillStyle = isAnomaly ? '#ff3366' : 'rgba(255, 255, 255, 0.7)';
+        ctx.font = 'bold 8px Orbitron';
+        ctx.fillText(`CAM 01 ${isAnomaly ? '🚨' : '🟢'}`, c1_x - 18, c1_y - 12);
+    }
+    
+    // Render Camera 2 Heatmap & Node
+    if (data2) {
+        const rad = Math.max(12, (data2.density / 100.0) * 70);
+        const grad = ctx.createRadialGradient(c2_x, c2_y, 2, c2_x, c2_y, rad);
+        const color = data2.active_anomalies.length > 0 ? '255, 153, 51' : '0, 255, 204';
+        grad.addColorStop(0, `rgba(${color}, 0.25)`);
+        grad.addColorStop(1, `rgba(${color}, 0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(c2_x, c2_y, rad, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        const isAnomaly = data2.active_anomalies.length > 0;
+        ctx.fillStyle = isAnomaly ? '#ff9933' : '#00ffcc';
+        ctx.shadowBlur = isAnomaly ? 8 : 0;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.beginPath();
+        ctx.arc(c2_x, c2_y, 4, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.strokeStyle = ctx.fillStyle;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(c2_x, c2_y, pulseRadius, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        ctx.fillStyle = isAnomaly ? '#ff9933' : 'rgba(255, 255, 255, 0.7)';
+        ctx.font = 'bold 8px Orbitron';
+        ctx.fillText(`CAM 02 ${isAnomaly ? '⚠' : '🟢'}`, c2_x - 18, c2_y - 12);
+    }
 }
 
 // UI Actions
