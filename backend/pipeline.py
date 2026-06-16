@@ -82,7 +82,7 @@ class VideoPipeline:
 
     def set_simulation_state(self, state):
         """Allows external controls (like the dashboard) to force an anomaly state for demo purposes."""
-        if state in ["normal", "fight", "fall", "panic"]:
+        if state in ["normal", "fight", "fall", "panic", "intrusion", "loitering"]:
             self.simulated_state = state
             logger.info(f"Camera {self.camera_id} simulation state set to: {state}")
 
