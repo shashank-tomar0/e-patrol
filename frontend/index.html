@@ -35,6 +35,10 @@
                     <span class="m-label">NETWORK LATENCY</span>
                     <span class="m-value" id="ping-latency">14ms</span>
                 </div>
+                <div class="webhook-settings-group" style="display: flex; align-items: center; gap: 8px; border-left: 1px solid var(--border-color); padding-left: 15px; margin-right: 5px;">
+                    <input type="text" id="webhook-url-input" placeholder="Discord / Slack Webhook URL..." style="background: #090e15; border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); padding: 5px 10px; font-size: 0.72rem; outline: none; width: 170px; transition: all 0.2s ease;" onfocus="this.style.borderColor='var(--accent-cyan)'" onblur="this.style.borderColor='var(--border-color)'">
+                    <button class="btn" onclick="saveWebhookSettings()" style="padding: 4px 10px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan); border-color: rgba(0, 255, 204, 0.2); background: rgba(0, 255, 204, 0.03);">CONNECT</button>
+                </div>
                 <div class="time-display" id="system-time">2026-06-16 21:30:00 UTC</div>
             </div>
         </header>

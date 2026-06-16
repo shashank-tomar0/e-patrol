@@ -584,6 +584,51 @@ async function connectRealFeed(camId) {
     }
 }
 
+async function saveWebhookSettings() {
+    const input = document.getElementById('webhook-url-input');
+    const url = input.value.trim();
+    const btn = input.nextElementSibling;
+    const originalText = btn.innerText;
+    
+    btn.innerText = "SAVING...";
+    btn.disabled = true;
+    input.disabled = true;
+    
+    try {
+        const response = await fetch(`${BASE_URL}/api/settings`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ webhook_url: url })
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            btn.innerText = "CONNECTED";
+            btn.style.borderColor = "var(--accent-cyan)";
+            btn.style.color = "var(--accent-cyan)";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.borderColor = "";
+                btn.style.color = "";
+                btn.disabled = false;
+                input.disabled = false;
+            }, 2000);
+        } else {
+            throw new Error();
+        }
+    } catch (e) {
+        btn.innerText = "FAILED";
+        btn.style.borderColor = "var(--accent-red)";
+        btn.style.color = "var(--accent-red)";
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.borderColor = "";
+            btn.style.color = "";
+            btn.disabled = false;
+            input.disabled = false;
+        }, 2000);
+    }
+}
+
 async function triggerSim(camId, simState) {
     // Highlight active simulation button
     const card = document.getElementById(`cam-card-${camId}`);

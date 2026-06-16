@@ -10,7 +10,7 @@ import uvicorn
 
 from pipeline import VideoPipeline
 from analytics import AnalyticsEngine
-from agents import SceneVerifierAgent, IncidentSummarizerAgent
+from agents import SceneVerifierAgent, IncidentSummarizerAgent, AlertDispatcher
 from db import EventDatabase
 
 # Set up logging
@@ -32,6 +32,8 @@ app.add_middleware(
 db = EventDatabase()
 verifier_agent = SceneVerifierAgent()
 summarizer_agent = IncidentSummarizerAgent()
+alert_dispatcher = AlertDispatcher()
+dispatch_webhook_url = ""
 
 # Cameras Setup
 # We support multiple mock/simulated cameras by default
@@ -163,6 +165,9 @@ async def generate_and_log_dossier(camera_id, event_type, location, verifier_dat
         except Exception:
             alert_connections.remove(ws)
 
+    # Dispatch external mobile alerts (Slack/Discord Webhooks)
+    asyncio.create_task(alert_dispatcher.dispatch_alert(event_record, webhook_url=dispatch_webhook_url))
+
 @app.on_event("startup")
 async def startup_event():
     # Start background processing tasks for both cameras
@@ -266,6 +271,14 @@ def simulate_camera_anomaly(camera_id: int, state: str):
         return {"error": "Camera not found"}, 404
     cameras[camera_id].set_simulation_state(state)
     return {"status": "success", "camera_id": camera_id, "state": state}
+
+@app.post("/api/settings")
+def update_settings(payload: dict):
+    """Dynamically updates the global webhook URL for dispatch notifications."""
+    global dispatch_webhook_url
+    dispatch_webhook_url = payload.get("webhook_url", "").strip()
+    logger.info(f"Global dispatch webhook settings updated: {dispatch_webhook_url}")
+    return {"status": "success", "webhook_url": dispatch_webhook_url}
 
 # Serve Frontend
 @app.get("/")

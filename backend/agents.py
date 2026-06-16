@@ -180,3 +180,51 @@ class IncidentSummarizerAgent:
             "llm_generated": False
         }
 import time
+
+class AlertDispatcher:
+    """Dispatches real-time webhooks (Discord / Slack) for mobile patrol notifications."""
+    def __init__(self, default_webhook_url=None):
+        self.default_webhook_url = default_webhook_url or os.getenv("DISPATCH_WEBHOOK_URL")
+
+    async def dispatch_alert(self, event_record, webhook_url=None):
+        target_url = webhook_url or self.default_webhook_url
+        if not target_url:
+            logger.info(f"Console Patrol Log: [{event_record['type'].upper()}] - {event_record['summary']}")
+            return False
+
+        payload = {}
+        # Discord Embed
+        if "discord.com" in target_url:
+            payload = {
+                "username": "E-Patrol Dispatch Bot",
+                "avatar_url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100",
+                "embeds": [{
+                    "title": f"🚨 EMERGENCY PATROL DISPATCH: {event_record['type'].upper()}",
+                    "description": event_record['summary'],
+                    "color": 16724582 if event_record['severity'] == 'critical' else 16751155,
+                    "fields": [
+                        {"name": "📍 Location Beat", "value": event_record['location'], "inline": True},
+                        {"name": "⚠️ Threat Severity", "value": event_record['threat_level'], "inline": True},
+                        {"name": "🔍 Evidentiary Analysis", "value": event_record.get('visual_analysis', 'Standard protocols apply.'), "inline": False}
+                    ],
+                    "timestamp": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(event_record['timestamp']))
+                }]
+            }
+        else:
+            # Slack Format
+            payload = {
+                "text": f"🚨 *E-PATROL ALERT: {event_record['type'].upper()}* \n*Location*: {event_record['location']} \n*Severity*: {event_record['threat_level']} \n*AI Summary*: {event_record['summary']}"
+            }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(target_url, json=payload, timeout=5.0)
+                if response.status_code in [200, 204]:
+                    logger.info("Alert webhook successfully dispatched to external endpoint.")
+                    return True
+                else:
+                    logger.error(f"Alert webhook failed with status {response.status_code}")
+        except Exception as e:
+            logger.error(f"Error executing webhook request: {e}")
+        return False
+
